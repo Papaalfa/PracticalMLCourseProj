@@ -162,7 +162,9 @@ probePr2 <- predict(fit2, probe)
 confusionMatrix(probePr2, probe$classe)
 ```
 
-I can see that accuracy is still very high. So it's time to calculate an out of sample error rate
+## Out of Sample Error
+
+I can see that accuracy is still very high. So it's time to calculate an out of sample error rate. I use prob dataset which was cut from the training data set to get a cross validation based OOS error.
 ```{r}
 oos <- round(sum(probePr2 != probe$classe)/length(probe$classe)*100, 2)
 ```

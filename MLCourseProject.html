@@ -324,39 +324,42 @@ confusionMatrix(probePr2, probe$classe)</code></pre>
 ##           Reference
 ## Prediction    A    B    C    D    E
 ##          A 3334   41    0    0    0
-##          B    9 2213   16    1    3
-##          C    4   24 2028   38    3
+##          B    9 2212   16    1    3
+##          C    4   25 2028   38    3
 ##          D    0    1   10 1888    5
 ##          E    1    0    0    3 2154
 ## 
 ## Overall Statistics
 ##                                           
-##                Accuracy : 0.9865          
-##                  95% CI : (0.9842, 0.9885)
+##                Accuracy : 0.9864          
+##                  95% CI : (0.9842, 0.9884)
 ##     No Information Rate : 0.2843          
 ##     P-Value [Acc &gt; NIR] : &lt; 2.2e-16       
 ##                                           
-##                   Kappa : 0.9829          
+##                   Kappa : 0.9828          
 ##  Mcnemar's Test P-Value : NA              
 ## 
 ## Statistics by Class:
 ## 
 ##                      Class: A Class: B Class: C Class: D Class: E
-## Sensitivity            0.9958   0.9710   0.9873   0.9782   0.9949
-## Specificity            0.9951   0.9969   0.9929   0.9984   0.9996
-## Pos Pred Value         0.9879   0.9871   0.9671   0.9916   0.9981
-## Neg Pred Value         0.9983   0.9931   0.9973   0.9957   0.9989
+## Sensitivity            0.9958   0.9706   0.9873   0.9782   0.9949
+## Specificity            0.9951   0.9969   0.9928   0.9984   0.9996
+## Pos Pred Value         0.9879   0.9871   0.9666   0.9916   0.9981
+## Neg Pred Value         0.9983   0.9930   0.9973   0.9957   0.9989
 ## Prevalence             0.2843   0.1935   0.1744   0.1639   0.1838
-## Detection Rate         0.2831   0.1879   0.1722   0.1603   0.1829
-## Detection Prevalence   0.2866   0.1904   0.1781   0.1617   0.1833
-## Balanced Accuracy      0.9955   0.9840   0.9901   0.9883   0.9973</code></pre>
-<p>I can see that accuracy is still very high. So it’s time to calculate an out of sample error rate</p>
+## Detection Rate         0.2831   0.1878   0.1722   0.1603   0.1829
+## Detection Prevalence   0.2866   0.1903   0.1782   0.1617   0.1833
+## Balanced Accuracy      0.9955   0.9838   0.9901   0.9883   0.9973</code></pre>
+</div>
+</div>
+<div id="out-of-sample-error" class="section level2">
+<h2>Out of Sample Error</h2>
+<p>I can see that accuracy is still very high. So it’s time to calculate an out of sample error rate. I use prob dataset which was cut from the training data set to get a cross validation based OOS error.</p>
 <pre class="r"><code>oos &lt;- round(sum(probePr2 != probe$classe)/length(probe$classe)*100, 2)</code></pre>
-<p>The expected OOS is <strong>1.35%</strong>.</p>
+<p>The expected OOS is <strong>1.36%</strong>.</p>
 <p>As the final step I apply the model to the testing dataset to get answers for the Quiz.</p>
 <pre class="r"><code>testPr &lt;- predict(fit2, testing)</code></pre>
 <p>So the answer is <strong>B, A, A, A, A, E, D, B, A, A, B, C, B, A, E, E, A, B, B, B</strong>.</p>
-</div>
 </div>
 
 
