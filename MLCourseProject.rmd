@@ -1,0 +1,175 @@
+---
+title: "Practical Machine Learning Course Project."
+author: "Sergey Zimin"
+date: 'Sep-11-2016'
+output: html_document
+---
+## Introduction and Background
+
+This is the final course project for the **Practical Machine Learning** Course on Coursera.
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
+
+One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, my goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+The goal of the project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. It's allowed to use any of the other variables to predict with. This report is describing how I built the model, how I used cross validation, what I think the expected out of sample error is, and why I made the choices I did.
+
+## Data
+
+The training data for this project are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv  
+The test data are available here:
+https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv
+
+## Loading data
+
+First I get the datasets files from the links.
+Then I create datasets for both files and load needed libraries. 
+```{r, cache=TRUE}
+## Setting time of data download
+print(Sys.time())
+
+## Loading data
+urltr <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-training.csv"
+urlts <- "https://d396qusza40orc.cloudfront.net/predmachlearn/pml-testing.csv"
+training <- read.csv(urltr)
+testing <- read.csv(urlts)
+```
+
+I will use [caret](https://cran.r-project.org/web/packages/caret/index.html) package for building models and [ggplot2](https://cran.r-project.org/web/packages/ggplot2/index.html) package for plotting.
+Also packages [rpart](https://cran.r-project.org/web/packages/rpart/index.html) and [randomForest](https://cran.r-project.org/web/packages/randomForest/index.html) will be used by the **train** function to build the models.
+```{r}
+## Loading needed libraries
+suppressMessages(library(caret))
+suppressMessages(library(ggplot2))
+suppressMessages(library(rpart))
+suppressMessages(library(randomForest))
+```
+
+## Exploratory analysis
+
+As the next step I am checking the datasets.
+```{r}
+## Checking data
+dim(training)
+dim(testing)
+
+head(names(training), 10)
+tail(names(training), 10)
+summary(training$classe)
+```
+
+I can see that there are 160 variables in total in the dataset. Most of them are data from the sensors, there are also timestamps data, a variable indicating the experiments participants and an indexing variable. I can also see that testing dataset is big enough so I can split it to training and probe sets to evaluate out of sample error rate.
+```{r}
+## Splitting testing data into train and probe datasets
+set.seed(123)
+inProbe <- createDataPartition(training$classe, p = 0.6, list = FALSE)
+train <- training[-inProbe,]
+probe <- training[inProbe,]
+```
+
+Then I build a couple of feature plots to check the data. I can see there that the belt sensor could be a good predictor for a model.
+```{r, cache=TRUE}
+## Building exploratory plots
+beltCols <- grep("belt$", names(train), value = TRUE)
+featurePlot(x=train[,beltCols[1:4]]
+            , y=train$classe
+            , plot = "pairs"
+            , main = "Feature Plot for the Belt sensor"
+            , auto.key=list(space="right"
+                            , title="Classe"
+                            , cex.title=1
+                            , points=TRUE))
+```
+
+__*Figure 1. Feature Plot for the Belt sensor*__
+
+```{r, cache=TRUE}
+accelCols <- grep("total_accel", names(train), value = TRUE)
+featurePlot(x=train[,accelCols]
+            , y=train$classe
+            , plot = "pairs"
+            , main = "Feature Plot for Acceleration"
+            , auto.key=list(space="right"
+                            , title="Classe"
+                            , cex.title=1
+                            , points=TRUE))
+```
+
+__*Figure 2. Feature Plot for Acceleration*__
+
+## Data preprocessing and features selection
+
+I can see no need to preprocess the data. So as the next step I've decided only to remove some variables from the features set:  
+1. Variables with too many NAs  
+2. Variables with near zero variance  
+3. Timestamps, windows, participants and indexing variables as from my perspective these would not add any value to the prediction but could cause ovetfitting.
+
+```{r}
+## Removing predictors with too many NAs, near zero variability and index variable
+naShare <- sapply(train, function (x) mean(is.na(x)))
+unique(naShare)
+tooManyNAs <- names(naShare[naShare > .5])
+
+nzvData <- nearZeroVar(train, saveMetrics = TRUE)
+isNZV <- row.names(nzvData[nzvData$nzv,])
+
+isTmstamps <- grep("timestamp", names(train), value = TRUE)
+isWindow <- grep("window", names(train), value = TRUE)
+
+colsToExclude <- unique(c(tooManyNAs
+                          , isNZV
+                          , isTmstamps
+                          , isWindow
+                          , names(train)[1:6]))
+
+trainClr <- train[,!(names(train) %in% colsToExclude)]
+```
+
+## Models creation and selecting
+
+Then I'm building two prediction models with methods **"Decision tree"** and **"Random Forest"**. I decided to use these models as they both are apropriate for multifactorial dependent variables and Random Forest is also one of the most accurate ones. I use cross validation with **2 folds** for both models and **100 trees** for the Random Forest modelling. 
+I've chosen these figures as I just started with some small numbers and it turned out these were enough to get an almost perfect prediction.
+```{r}
+## Setting cross validation folds number
+trControl <- trainControl(method = "cv", number = 2)
+```
+
+### Decision Tree Model
+I build the standard decision tree model with **rpart** method of the caret's **train** function
+```{r, cache=TRUE}
+## Decision tree
+set.seed(123)
+fit <- train(classe ~., data = trainClr, method = "rpart", trControl=trControl)
+trainPr <- predict(fit, trainClr)
+confusionMatrix(trainPr, trainClr$classe)
+```
+
+### Random Forest Model
+I build a random forest model of **100 trees** with **rf** method.
+```{r, cache=TRUE}
+## Random forest
+set.seed(123)
+fit2 <- train(classe ~., data = trainClr, method = "rf", ntree=100, trControl=trControl)
+trainPr2 <- predict(fit2, trainClr)
+confusionMatrix(trainPr2, trainClr$classe)
+```
+
+I can see that accuracy of the random forest is much better than the one of the decision tree, and also it looks perfect, so from my perspective it worth using this model for the prediction.  
+Now I apply the random forest model to the probe dataset.
+```{r}
+probePr2 <- predict(fit2, probe)
+confusionMatrix(probePr2, probe$classe)
+```
+
+I can see that accuracy is still very high. So it's time to calculate an out of sample error rate
+```{r}
+oos <- round(sum(probePr2 != probe$classe)/length(probe$classe)*100, 2)
+```
+The expected OOS is **`r paste0(oos, "%")`**.
+
+As the final step I apply the model to the testing dataset to get answers for the Quiz.
+```{r}
+testPr <- predict(fit2, testing)
+```
+So the answer is **`r testPr`**.
