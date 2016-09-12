@@ -174,7 +174,7 @@ dim(training)</code></pre>
 <pre class="r"><code>summary(training$classe)</code></pre>
 <pre><code>##    A    B    C    D    E 
 ## 5580 3797 3422 3216 3607</code></pre>
-<p>I can see that there are 160 variables in total in the dataset. Most of them are data from the sensors, there are also timestamps data, a variable indicating the experiments participants and an indexing variable. I can also see that testing dataset is big enough so I can split it to training and probe sets to evaluate out of sample error rate.</p>
+<p>I can see that there are 160 variables in total in the dataset. Most of them are data from the sensors, there are also timestamps data, a variable indicating the experiments participants and an indexing variable. I can also see that training dataset is big enough so I can split it to training and probe sets to evaluate out of sample error rate with cross validation.</p>
 <pre class="r"><code>## Splitting testing data into train and probe datasets
 set.seed(123)
 inProbe &lt;- createDataPartition(training$classe, p = 0.6, list = FALSE)
