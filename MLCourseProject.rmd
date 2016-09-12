@@ -8,7 +8,7 @@ output: html_document
 
 This is the final course project for the **Practical Machine Learning** Course on Coursera.
 
-Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement â€“ a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. 
 
 One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, my goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
 
@@ -59,7 +59,7 @@ tail(names(training), 10)
 summary(training$classe)
 ```
 
-I can see that there are 160 variables in total in the dataset. Most of them are data from the sensors, there are also timestamps data, a variable indicating the experiments participants and an indexing variable. I can also see that testing dataset is big enough so I can split it to training and probe sets to evaluate out of sample error rate.
+I can see that there are 160 variables in total in the dataset. Most of them are data from the sensors, there are also timestamps data, a variable indicating the experiments participants and an indexing variable. I can also see that training dataset is big enough so I can split it to training and probe sets to evaluate out of sample error rate with cross validation.
 ```{r}
 ## Splitting testing data into train and probe datasets
 set.seed(123)
